@@ -16,8 +16,6 @@ genTestButton.addEventListener("click", () => {
     genResult.value = genFormula();
 });
 
-let GREAT_ITERATOR = 0;
-
 let openBracketsCount = 0;
 let openArray = [];
 let closeArray = [];
@@ -54,6 +52,7 @@ function main(){
                 console.log(arrayChecked);
                 console.log(arrayOfFindAtom);
                 configurateTruthTable();
+
             } else {
              resultTextarea.value = "Строка не является формулой.";
             }
@@ -404,6 +403,13 @@ function configurateTruthTable(){
         // configurateFormulasColumn(colLength, arrayOfAtoms, arrayOfFormulas[i] );
          //     findValue(arrayOfFormulas[i],1);
     }
+    let lastColValues = [];
+
+    if ( arrayOfFormulas.length === 0) {
+        resultTextarea.value += ".Формула является нейтральной";
+        return;
+    }
+    
     for (let j = 0; j < colLength; j++ ) {
         let row = document.getElementById("id" + j);
         console.log("arrayOfFormulas.length = " + arrayOfFormulas.length)
@@ -411,16 +417,47 @@ function configurateTruthTable(){
             let cell = row.insertCell(i + arrayOfAtoms.length);
             let value = evalValue(findValue(arrayOfFormulas[i],j+1));
             cell.innerHTML = value;
+            console.log("хер там был");
+            console.log("312312412");
+            console.log(i);
+            if (i === arrayOfFormulas.length - 1) {
+                console.log("Нашли последний ряд");
+                lastColValues.push(value);
+            }
 
         }
 
     }
-  
-
-
-
-    
+    console.log("считали для длины =  " + colLength);
+    console.log("Является нейтральным?");
+    console.log(checkTheNeutralityOfTheFormula(lastColValues));
+    if ( checkTheNeutralityOfTheFormula(lastColValues) ) {
+        resultTextarea.value += ".Формула является нейтральной";
+    } else {
+        resultTextarea.value += ".Формула является не нейтральной";
+    }
 }
+
+function checkTheNeutralityOfTheFormula(lastRowValues){
+    let isTrue = false;
+    let isFalse = false;
+    console.log(lastRowValues);
+
+    //for(let i = 0; i < lastRowValues.length; i++ ) {
+    if (arrayContainsElement("1", lastRowValues)) {
+        isTrue = true;
+    }
+
+    if (arrayContainsElement("0", lastRowValues)) {
+        isFalse = true;
+    }
+
+    return isFalse && isTrue;
+    //}
+
+}
+
+
 
 function findFirstAtom(string) {
     for (let i = 0; i < string.length; i ++ ) {
@@ -463,7 +500,13 @@ function evalValue(string){
         console.log(string);
 
     }
-    return eval(string);
+    let willReturn = eval(string);
+    if (willReturn == false || 0 ) {
+        return "0";
+    } else {
+        return "1";
+    }
+    // return eval(string);
 }
 
 function findValue(formula,rowNUM){
@@ -522,13 +565,6 @@ function configurateFormulasColumn(colLength, arrayOfAtoms, formula){
             console.log(cells[j].innerHTML);
             values.push(cells[j].innerHTML);
         }
-         //let cell = row.insertCell(arrayOfAtoms.length);
-        //let value = findValue(formula,i+1);
-        //cell.innerHTML = value;
-        // GREAT_ITERATOR = 0;
-        // findValue(formula,i+1, cell);
-        //cell.innerHTML = value;
-        //console.log("value = " + value);
     }
 
    
