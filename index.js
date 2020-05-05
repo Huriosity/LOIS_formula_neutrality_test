@@ -422,7 +422,47 @@ function configurateTruthTable(){
     
 }
 
+function findFirstAtom(string) {
+    for (let i = 0; i < string.length; i ++ ) {
+        if (string[i].match(atom)){
+            return string[i];
+        }
+    }
+    return -1;
+}
+
+
+function findLastAtom(string) {
+    for (let i = string.length - 1 ; i >= 0; i -- ) {
+        if (string[i].match(atom)){
+            return string[i];
+        }
+    }
+    return -1;
+}
+
 function evalValue(string){
+    console.log(typeof(string));
+    console.log("eval comand = " + string);
+    if (string.includes("->")) {
+        console.log("eval contains arrow");
+        string = string.replace("->","|")
+        string = "(!" + string.slice(1);
+        console.log(typeof(string));
+        console.log("now eval comand = " + string);
+    } else if (string.includes("~")) {
+        console.log("eval contains equivalence");
+        string = string.replace("~","|");
+   
+        let s1 = findFirstAtom(string);
+        let s2 = findLastAtom(string)
+        // console.log("first atom = " + s1);
+        // console.log("last atom = " + s2);
+        string = "(!" + string.slice(1);
+        string = string + "&(!" + s2 + "|" + s1 + ")";
+        console.log(string);
+
+    }
     return eval(string);
 }
 
