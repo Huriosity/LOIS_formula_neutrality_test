@@ -1,3 +1,11 @@
+//////////////////////////////////////////////////////////////////////////////////////
+// Лабораторная работа 2 по дисциплине ЛОИС
+// Выполнена студентом группы 721702 БГУИР Гуриновичем Александром Александровичем
+// Файл содержит функции нахождения подформул,генерации формул, систему проверки знаний пользователя
+//
+// Функция генерации формулы https://github.com/PlagaMedicum/LOIS/tree/master/Lab1
+//
+
 okButton = document.getElementById("ok_button");
 inputField = document.getElementById("input_field");
 resultTextarea = document.getElementById("result_textarea");
@@ -7,10 +15,53 @@ genResultField = document.getElementById("genResult");
 
 truthTable = document.getElementById("truthTable");
 
+classicModeButton = document.getElementById("classic");
+testModeButton = document.getElementById("user_test");
+
+formulaForm = document.getElementById("formulaForm");
+answerField = document.getElementById("answer");
+answerLabel = document.getElementById("answerLabel");
+checkAnswerButton = document.getElementById("checkAnswer");
+
+let isNeutral = false;
+
 
 okButton.addEventListener("click", () => {
-    main();
+    let inputString = inputField;
+    main(inputString);
 });
+
+checkAnswerButton.addEventListener("click", () => {
+    checkAnswer();
+});
+
+classicModeButton.addEventListener("click", () => {
+    testModeButton.removeAttribute("class");
+    classicModeButton.setAttribute("class", "selected");
+
+    formulaForm.removeAttribute("class");
+    // genTestButton.setAttribute("class","none");
+    // genResultField.setAttribute("class","none");
+    answerField.setAttribute("class","none");
+    answerLabel.setAttribute("class","none");
+    checkAnswerButton.setAttribute("class","none");
+    resultTextarea.value = "";
+
+});
+
+testModeButton.addEventListener("click", () => {
+    classicModeButton.removeAttribute("class");testModeButton
+    testModeButton.setAttribute("class", "selected")
+
+    formulaForm.setAttribute("class","none");
+    // genTestButtongenTestButton.removeAttribute("class");
+    // genResultField.removeAttribute("class");
+    answerField.removeAttribute("class");
+    answerLabel.removeAttribute("class");
+    checkAnswerButton.removeAttribute("class");
+    resultTextarea.value = "";
+});
+
 
 genTestButton.addEventListener("click", () => {
     genResult.value = genFormula();
@@ -29,7 +80,7 @@ const operators = /[*&|~]/g;
 const arrow = /(->)/
 
 
-function main(){
+function main(inputX){
 
     openBracketsCount = 0;
     openArray = [];
@@ -38,7 +89,8 @@ function main(){
     arrayChecked = [];
     arrayOfFindAtom = [];
 
-    let inputString = inputField.value;
+    let inputString  = inputX.value;
+
     let brackets = getBracketsFromString(inputString);
     if(!countBrackets(brackets)){
         resultTextarea.value = "проверь скобки";
@@ -49,8 +101,6 @@ function main(){
             if ( allSubStringsIsFormula(inputString) ) {
                 resultTextarea.value = "Строка является формулой.";
                 resultTextarea.value += " Найдено " + findAtomCount(inputString) + " подформул";
-                console.log(arrayChecked);
-                console.log(arrayOfFindAtom);
                 configurateTruthTable();
 
             } else {
@@ -332,7 +382,6 @@ function findAtomCount(string){
     for ( let i = 0; i < arrayChecked.length; i += 1 ) {
         if ( string.includes( arrayChecked[i] ) ) {
             counter++;
-            console.log("Подформула в скобках = " + arrayChecked[i]);
         }
     }
     for ( let i = 0; i < string.length; i++ ) {
@@ -382,13 +431,11 @@ function configurateTruthTable(){
     let tableHeadersRow = truthTable.insertRow(0);
 
     for( let i = 0; i < arrayOfAtoms.length; i++ ) {
-        console.log(arrayOfAtoms);
         let cell = tableHeadersRow.insertCell(i);
         cell.innerHTML = arrayOfAtoms[i];
     }
 
     let colLength = Math.pow(2,arrayOfAtoms.length - counterOfConstants);
-    console.log(colLength); 
 
     for(let i = 0; i < colLength; i++ ) {
         let row = truthTable.insertRow(i+1);
@@ -420,7 +467,6 @@ function configurateTruthTable(){
             let cell = row.insertCell(i + arrayOfAtoms.length);
             let value = evalValue(findValue(arrayOfFormulas[i],j+1));
             cell.innerHTML = value;
-            console.log(i);
             if (i === arrayOfFormulas.length - 1) {
                 lastColValues.push(value);
             }
@@ -447,7 +493,8 @@ function checkTheNeutralityOfTheFormula(lastRowValues){
         isFalse = true;
     }
 
-    return isFalse && isTrue;
+    isNeutral = isFalse && isTrue 
+    return isNeutral;
 
 }
 
@@ -515,7 +562,6 @@ function findValue(formula,rowNUM){
 }
 
 function configurateBasicColumn(arrayOfAtoms,colLength) {
-    console.log("arrLength = " + arrayOfAtoms.length);
     let currentSumInRow = ""
     let arrLength = 0;
     for (let i = 0; i < arrayOfAtoms.length; i++ ) {
@@ -527,7 +573,6 @@ function configurateBasicColumn(arrayOfAtoms,colLength) {
     }
 
     for (let i = 0; i < colLength; i++ ) {
-        console.log("cursum = " + currentSumInRow );
         let row = document.getElementById("id" + i);
         let ij = 0;
         for (let j = 0; j < arrayOfAtoms.length; j++ ) {
@@ -543,7 +588,6 @@ function configurateBasicColumn(arrayOfAtoms,colLength) {
             }
          
         } 
-        console.log("length = " + arrLength)
         currentSumInRow = addMissingZeros(sum(currentSumInRow,"1"),arrLength);
     }
 }
@@ -552,8 +596,6 @@ function sum(x,y) {
     let x1 = parseInt(x,2);
     let y1 = parseInt(y,2);
     let result  = (x1+y1).toString(2);
-    console.log(result);
-    console.log(typeof(result));
     return result;
 }
 
@@ -565,6 +607,20 @@ function addMissingZeros(string, length) {
 }
 
 
+
+function checkAnswer(){
+    let inputString = genResultField;
+    main(inputString)
+    let userAnswer = (answerField.value);
+
+    if(userAnswer === "да" && isNeutral === true) {
+        resultTextarea.value = "Вы правы. " + resultTextarea.value
+    } else if (userAnswer === "нет" && isNeutral === false){
+        resultTextarea.value = "Вы правы. " + resultTextarea.value
+    } else {
+        resultTextarea.value = "Вы не правы. " + resultTextarea.value
+    }
+}
 
 /////////
 const binary = ["->", "&", "|", "~"];
