@@ -356,13 +356,11 @@ function findAtomCount(string){
 }
 
 function configurateTruthTable(){
-    // console.log();
     let arrayOfAtoms = [];
     let arrayOfFormulas = [];
     let counterOfConstants = 0;
 
     for ( let i = 0; i < arrayOfFindAtom.length; i++ ) {
-        // onsole.log(arrayOfFindAtom[i]);
         arrayOfAtoms.push( arrayOfFindAtom[i] );
         if ( arrayOfAtoms[i].toString(10) === "0" || arrayOfAtoms[i].toString(10) === "1" ) {
             counterOfConstants ++;
@@ -372,13 +370,15 @@ function configurateTruthTable(){
     for (let i = 0; i < arrayChecked.length; i++ ) {
         if(arrayChecked[i].length === 1) {
             arrayOfAtoms.push( arrayChecked[i]);
+            if ( arrayOfAtoms[i].toString(10) === "0" || arrayOfAtoms[i].toString(10) === "1" ) {
+                counterOfConstants ++;
+            }
         } else {
             arrayOfFormulas.push(arrayChecked[i]);
         }
     }
     
     truthTable.innerHTML = "";
-    // let tableHeaders = truthTable.createTHead();
     let tableHeadersRow = truthTable.insertRow(0);
 
     for( let i = 0; i < arrayOfAtoms.length; i++ ) {
@@ -394,43 +394,40 @@ function configurateTruthTable(){
         let row = truthTable.insertRow(i+1);
         row.setAttribute("id", "id" + i);
     }
-    console.log("arr = " + arrayOfAtoms);
     configurateBasicColumn(arrayOfAtoms,colLength);
 
     for ( let i = 0; i < arrayOfFormulas.length; i++ ) {
         let cell = tableHeadersRow.insertCell(i + arrayOfAtoms.length);
         cell.innerHTML = arrayOfFormulas[i];
-        // configurateFormulasColumn(colLength, arrayOfAtoms, arrayOfFormulas[i] );
-         //     findValue(arrayOfFormulas[i],1);
     }
     let lastColValues = [];
 
     if ( arrayOfFormulas.length === 0) {
-        resultTextarea.value += ".Формула является нейтральной";
-        return;
+        if (counterOfConstants === 1) {
+            resultTextarea.value += ".Формула является не нейтральной";
+            return;
+
+        } else {
+            resultTextarea.value += ".Формула является нейтральной";
+            return;
+        }
+
     }
     
     for (let j = 0; j < colLength; j++ ) {
         let row = document.getElementById("id" + j);
-        console.log("arrayOfFormulas.length = " + arrayOfFormulas.length)
         for ( let i = 0; i < arrayOfFormulas.length; i++ ) {
             let cell = row.insertCell(i + arrayOfAtoms.length);
             let value = evalValue(findValue(arrayOfFormulas[i],j+1));
             cell.innerHTML = value;
-            console.log("хер там был");
-            console.log("312312412");
             console.log(i);
             if (i === arrayOfFormulas.length - 1) {
-                console.log("Нашли последний ряд");
                 lastColValues.push(value);
             }
 
         }
 
     }
-    console.log("считали для длины =  " + colLength);
-    console.log("Является нейтральным?");
-    console.log(checkTheNeutralityOfTheFormula(lastColValues));
     if ( checkTheNeutralityOfTheFormula(lastColValues) ) {
         resultTextarea.value += ".Формула является нейтральной";
     } else {
@@ -441,9 +438,7 @@ function configurateTruthTable(){
 function checkTheNeutralityOfTheFormula(lastRowValues){
     let isTrue = false;
     let isFalse = false;
-    console.log(lastRowValues);
 
-    //for(let i = 0; i < lastRowValues.length; i++ ) {
     if (arrayContainsElement("1", lastRowValues)) {
         isTrue = true;
     }
@@ -453,7 +448,6 @@ function checkTheNeutralityOfTheFormula(lastRowValues){
     }
 
     return isFalse && isTrue;
-    //}
 
 }
 
@@ -479,96 +473,45 @@ function findLastAtom(string) {
 }
 
 function evalValue(string){
-    console.log(typeof(string));
-    console.log("eval comand = " + string);
     if (string.includes("->")) {
-        console.log("eval contains arrow");
         string = string.replace("->","|")
         string = "(!" + string.slice(1);
-        console.log(typeof(string));
-        console.log("now eval comand = " + string);
     } else if (string.includes("~")) {
-        console.log("eval contains equivalence");
         string = string.replace("~","|");
    
         let s1 = findFirstAtom(string);
-        let s2 = findLastAtom(string)
-        // console.log("first atom = " + s1);
-        // console.log("last atom = " + s2);
+        let s2 = findLastAtom(string);
+
         string = "(!" + string.slice(1);
         string = string + "&(!" + s2 + "|" + s1 + ")";
-        console.log(string);
-
     }
     let willReturn = eval(string);
+
     if (willReturn == false || 0 ) {
         return "0";
     } else {
         return "1";
     }
-    // return eval(string);
 }
 
 function findValue(formula,rowNUM){
-    console.log("findValue");
-    console.log("formula = " + formula);
     let allHeaders = truthTable.childNodes[0].childNodes[0].innerText;
     let allHeadersArray = []
     allHeadersArray = allHeaders.split(/\s+/g);
-    // таблица строка колона
   
     for(let i = allHeadersArray.length - 1; i >= 0 ; i -= 1) {
         if ( formula.includes( allHeadersArray[i] )  && formula !== allHeadersArray[i]) { 
              let newText = truthTable.childNodes[0].childNodes[rowNUM].childNodes[i].innerText
-             console.log("new text = " + newText);
+
             formula = formula.replace(allHeadersArray[i],newText);
 
-             console.log("contains " + allHeadersArray[i]);
-             console.log("new Formula = " + formula);
              if (allHeadersArray[i].toString(10 === "1" || allHeadersArray[i].toString(10) === "0")) {
                 continue;
             }
               i++;
         }
     }
-    console.log("new last Formula = " + formula);
-
-
    return formula;
-
-}
-
-function calculateFormulaOutput(formula){
-
-    let string = formula;
-
-    for(let i = arrayChecked.length - 1; i >= 0 ; i -= 1) {
-        if ( string.includes( arrayChecked[i] ) ) { 
-            string = string.replace(arrayChecked[i],"A");
-            i++;
-        }
-    }
-
-    if (!arrayContainsElement(formula, arrayChecked)) {
-        arrayChecked.push(formula);
-    }
-
-}
-
-function configurateFormulasColumn(colLength, arrayOfAtoms, formula){
-
-    for ( let i = 0;i < colLength; i++ ) {
-        let values = [];
-        let row = document.getElementById("id" + i);
-        let cells = row.childNodes;
-        for (let j = 0; j < arrayOfAtoms.length; j++) {
-            console.log(cells[j].innerHTML);
-            values.push(cells[j].innerHTML);
-        }
-    }
-
-   
-
 }
 
 function configurateBasicColumn(arrayOfAtoms,colLength) {
