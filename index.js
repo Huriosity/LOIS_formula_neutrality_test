@@ -16,7 +16,7 @@ genTestButton.addEventListener("click", () => {
     genResult.value = genFormula();
 });
 
-
+let GREAT_ITERATOR = 0;
 
 let openBracketsCount = 0;
 let openArray = [];
@@ -24,6 +24,7 @@ let closeArray = [];
 
 let arrayChecked = [];
 let arrayOfFindAtom = [];
+let arrayCalculated = [];
 
 const atom = /[A-Z0-1]/g;
 const operators = /[*&|~]/g;
@@ -358,6 +359,7 @@ function findAtomCount(string){
 function configurateTruthTable(){
     // console.log();
     let arrayOfAtoms = [];
+    let arrayOfFormulas = [];
     let counterOfConstants = 0;
 
     for ( let i = 0; i < arrayOfFindAtom.length; i++ ) {
@@ -371,8 +373,11 @@ function configurateTruthTable(){
     for (let i = 0; i < arrayChecked.length; i++ ) {
         if(arrayChecked[i].length === 1) {
             arrayOfAtoms.push( arrayChecked[i]);
+        } else {
+            arrayOfFormulas.push(arrayChecked[i]);
         }
     }
+    
     truthTable.innerHTML = "";
     // let tableHeaders = truthTable.createTHead();
     let tableHeadersRow = truthTable.insertRow(0);
@@ -392,25 +397,135 @@ function configurateTruthTable(){
     }
     console.log("arr = " + arrayOfAtoms);
     configurateBasicColumn(arrayOfAtoms,colLength);
+
+    for ( let i = 0; i < arrayOfFormulas.length; i++ ) {
+        let cell = tableHeadersRow.insertCell(i + arrayOfAtoms.length);
+        cell.innerHTML = arrayOfFormulas[i];
+        // configurateFormulasColumn(colLength, arrayOfAtoms, arrayOfFormulas[i] );
+         //     findValue(arrayOfFormulas[i],1);
+    }
+    for (let j = 0; j < colLength; j++ ) {
+        let row = document.getElementById("id" + j);
+        console.log("arrayOfFormulas.length = " + arrayOfFormulas.length)
+        for ( let i = 0; i < arrayOfFormulas.length; i++ ) {
+            let cell = row.insertCell(i + arrayOfAtoms.length);
+            let value = evalValue(findValue(arrayOfFormulas[i],j+1));
+            cell.innerHTML = value;
+
+        }
+
+    }
+  
+
+
+
+    
+}
+
+function evalValue(string){
+    return eval(string);
+}
+
+function findValue(formula,rowNUM){
+    console.log("findValue");
+    console.log("formula = " + formula);
+    let allHeaders = truthTable.childNodes[0].childNodes[0].innerText;
+    let allHeadersArray = []
+    allHeadersArray = allHeaders.split(/\s+/g);
+    // таблица строка колона
+  
+    for(let i = allHeadersArray.length - 1; i >= 0 ; i -= 1) {
+        if ( formula.includes( allHeadersArray[i] )  && formula !== allHeadersArray[i]) { 
+             let newText = truthTable.childNodes[0].childNodes[rowNUM].childNodes[i].innerText
+             console.log("new text = " + newText);
+            formula = formula.replace(allHeadersArray[i],newText);
+
+             console.log("contains " + allHeadersArray[i]);
+             console.log("new Formula = " + formula);
+             if (allHeadersArray[i].toString(10 === "1" || allHeadersArray[i].toString(10) === "0")) {
+                continue;
+            }
+              i++;
+        }
+    }
+    console.log("new last Formula = " + formula);
+
+
+   return formula;
+
+}
+
+function calculateFormulaOutput(formula){
+
+    let string = formula;
+
+    for(let i = arrayChecked.length - 1; i >= 0 ; i -= 1) {
+        if ( string.includes( arrayChecked[i] ) ) { 
+            string = string.replace(arrayChecked[i],"A");
+            i++;
+        }
+    }
+
+    if (!arrayContainsElement(formula, arrayChecked)) {
+        arrayChecked.push(formula);
+    }
+
+}
+
+function configurateFormulasColumn(colLength, arrayOfAtoms, formula){
+
+    for ( let i = 0;i < colLength; i++ ) {
+        let values = [];
+        let row = document.getElementById("id" + i);
+        let cells = row.childNodes;
+        for (let j = 0; j < arrayOfAtoms.length; j++) {
+            console.log(cells[j].innerHTML);
+            values.push(cells[j].innerHTML);
+        }
+         //let cell = row.insertCell(arrayOfAtoms.length);
+        //let value = findValue(formula,i+1);
+        //cell.innerHTML = value;
+        // GREAT_ITERATOR = 0;
+        // findValue(formula,i+1, cell);
+        //cell.innerHTML = value;
+        //console.log("value = " + value);
+    }
+
+   
+
 }
 
 function configurateBasicColumn(arrayOfAtoms,colLength) {
+    console.log("arrLength = " + arrayOfAtoms.length);
     let currentSumInRow = ""
+    let arrLength = 0;
     for (let i = 0; i < arrayOfAtoms.length; i++ ) {
+        if (arrayOfAtoms[i].toString(10) === "1" || arrayOfAtoms[i].toString(10) === "0"){
+            continue;
+        }
+        arrLength++;
         currentSumInRow += "0";
     }
 
-
-  
     for (let i = 0; i < colLength; i++ ) {
         console.log("cursum = " + currentSumInRow );
         let row = document.getElementById("id" + i);
+        let ij = 0;
         for (let j = 0; j < arrayOfAtoms.length; j++ ) {
+     
             let cell = row.insertCell(j);
-            cell.innerHTML = currentSumInRow[j];
+            if(arrayOfAtoms[j].toString(10) === "1") {
+                cell.innerHTML = "1";
+            } else if (arrayOfAtoms[j].toString(10) === "0") {
+                cell.innerHTML = "0";
+            } else {
+                cell.innerHTML = currentSumInRow[ij];
+                ij++;
+            }
+         
         } 
-        console.log("length = " + arrayOfAtoms.length)
-        currentSumInRow = addMissingZeros(sum(currentSumInRow,"1"),arrayOfAtoms.length);
+        console.log("length = " + arrLength)
+        currentSumInRow = addMissingZeros(sum(currentSumInRow,"1"),arrLength);
     }
 }
 
