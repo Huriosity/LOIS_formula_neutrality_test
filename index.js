@@ -455,6 +455,7 @@ function configurateTruthTable(){
             return;
 
         } else {
+            isNeutral = true;
             resultTextarea.value += ".Формула является нейтральной";
             return;
         }
